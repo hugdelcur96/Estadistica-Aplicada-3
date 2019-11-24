@@ -1,0 +1,81 @@
+---
+title: "Proyecto"
+author: "Hugo Delgado"
+date: "23/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+```
+
+
+```{r librerias, include=FALSE}
+library(tidyverse)
+```
+
+
+```{r lectura de datos, include=FALSE}
+datos <- read_csv("datos2018.csv")
+datos <- as.data.frame(unclass(datos))
+datos <- as_tibble(datos)
+```
+
+
+```{r lectura de datos, include=FALSE}
+datos2 <- datos %>% 
+  filter(!TIPACCID == "No aplica") %>% 
+  select(-c(COBERTURA, ANIO, MES, ID_HORA, ID_MINUTO, ID_DIA, DIASEMANA, URBANA, SUBURBANA, ESTATUS)) %>% 
+  select(-(AUTOMOVIL:OTROVEHIC), -(CONDMUERTO:NEHERIDO)) %>% 
+  mutate(Clasific = ifelse(CLASACC == "Fatal", 1, 0))
+datos2 <- as.data.frame(unclass(datos2))
+datos2 <- as_tibble(datos2)
+```
+
+
+```{r}
+datos2 %>% 
+  filter(CLASACC == "Certificado cero")
+```
+
+
+```{r}
+ggplot(datos2) + 
+  geom_bar(aes(x = Clasific))
+```
+
+
+```{r}
+datos2 %>% 
+  filter(TIPACCID == "Colisión con vehículo automotor") %>% 
+  group_by(CAUSAACCI, ALIENTO) %>% 
+  summarise(n = n())
+```
+
+
+```{r}
+datos2 %>% 
+  filter(TIPACCID == "Colisión con vehículo automotor") %>% 
+  group_by(ALIENTO, CONDMUERTO) %>% 
+  summarise(n = n())
+```
+
+```{r}
+datos2 %>% 
+  filter(!ID_EDAD == 0, !ID_EDAD == 99) %>% 
+  group_by(ID_EDAD) %>% 
+  summarise(n = n()) %>% 
+  summary()
+```
+
+
+```{r}
+reg <- glm(CLASACC ~ CAUSAACCI + CAPAROD + ALIENTO + CINTURON, data = datos2)
+```
+
+
+
+
+
+
+
