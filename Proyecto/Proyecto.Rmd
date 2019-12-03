@@ -1,0 +1,199 @@
+---
+title: "Proyecto"
+author: "Hugo Delgado"
+date: "2/12/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+```
+
+
+```{r include=FALSE}
+library(car)
+library(MASS)
+library(tidyverse)
+library(haven)
+library(factoextra)
+library(klaR)
+```
+
+
+```{r}
+datos <- read_csv("indicadores de pobreza municipal, 2015.csv", na = "n.d", locale = locale(encoding = "ISO-8859-1"))
+datos <- na.omit(datos)
+```
+
+```{r}
+pob <- datos %>% 
+  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali)
+```
+
+
+```{r}
+acp <- datos %>% 
+  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali) %>% 
+  prcomp(scale = TRUE)
+
+acp %>% 
+  summary()
+```
+
+```{r}
+comp_princ <- acp$x %>% scale() #Hay que estandarizar la salida
+comp_princ2 <- comp_princ[, 1:2] # Las primeras dos componentes principales
+comp_princ2 <- as_tibble(comp_princ2)
+PC1 <- comp_princ2$PC1
+PC2 <- comp_princ2$PC2
+fviz_pca_biplot(acp, geom = "point")
+```
+
+
+```{r}
+correl <- pob %>% 
+  add_column(PC1, PC2)
+correl <- correl %>% 
+  cor()
+correl <- correl[1:6, 7:8]
+correl <- round(correl, 3)
+```
+
+```{r}
+set.seed(02122019)
+fviz_nbclust(comp_princ2, kmeans, method = "wss")
+```
+
+
+```{r}
+set.seed(02122019)
+cl <- comp_princ2 %>%
+  kmeans(centers = 4, nstart = 25)
+```
+
+```{r}
+fviz_cluster(cl, data = pob, geom = "point")
+```
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
+  arrange(desc(pobreza)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = pobreza, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = pobreza, x = municipio, y = pobreza)) + 
+  labs(title = "Municipios con mayor y menor pobreza", x = "Municipio", y = "Porcentaje de la población en situación de pobreza", fill = "Estado") +
+  coord_flip()
+```
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
+  arrange(desc(pobreza_e)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = pobreza_e, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = pobreza_e, x = municipio, y = pobreza_e)) + 
+  labs(title = "Municipios con mayor y menor pobreza extrema", x = "Municipio", y = "Porcentaje de la población en situación de pobreza extrema", fill = "Estado") +
+  coord_flip()
+```
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
+  arrange(desc(pobreza_m)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = pobreza_m, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = pobreza_m, x = municipio, y = pobreza_m)) + 
+  labs(title = "Municipios con mayor y menor pobreza moderada", x = "Municipio", y = "Porcentaje de la población en situación de pobreza moderada", fill = "Estado") +
+  coord_flip()
+```
+
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_rezedu)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_rezedu, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_rezedu, x = municipio, y = ic_rezedu)) + 
+  labs(title = "Municipios con mayor y menor rezago educativo", x = "Municipio", y = "Porcentaje de la población con rezago educativo", fill = "Estado") +
+  coord_flip()
+```
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_asalud)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_asalud, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_asalud, x = municipio, y = ic_asalud)) +
+  labs(title = "Municipios con mayor y menor acceso a servicios de salud", x = "Municipio", y = "Porcentaje de la población con carencia por acceso a servicios de salud", fill = "Estado") +
+  coord_flip()
+```
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_segsoc)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_segsoc, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_segsoc, x = municipio, y = ic_segsoc)) +
+  labs(title = "Municipios con mayor y menor acceso a seguridad social", x = "Municipio", y = "Porcentaje de la población con carencia por acceso a la seguridad social", fill = "Estado") +
+  coord_flip()
+```
+
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_cv)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_cv, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_cv, x = municipio, y = ic_cv)) +
+  labs(title = "Municipios con mayor y menor carencias por calidad", x = "Municipio", y = "Porcentaje de la población con carencia por calidad y espacios de vivienda", fill = "Estado") +
+  coord_flip()
+```
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_sbv)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_sbv, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_sbv, x = municipio, y = ic_sbv)) +
+  labs(title = "Municipios con mayor y menor carencia a servicios básicos de vivienda", x = "Municipio", y = "Porcentaje de la población con carencia por acceso a servicios básicos en la vivienda", fill = "Estado") +
+  coord_flip()
+```
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(ic_ali)) %>% 
+  slice(1:5, (n()-4):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = ic_ali, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = ic_ali, x = municipio, y = ic_ali)) +
+  labs(title = "Municipios con mayor y menor carencia por acceso a alimentación", x = "Municipio", y = "Porcentaje de la población con carencia por acceso a la alimentación", fill = "Estado") +
+  coord_flip()
+```
+
+
+
+
+
+
+
+
