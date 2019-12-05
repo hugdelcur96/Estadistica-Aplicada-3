@@ -27,13 +27,13 @@ datos <- na.omit(datos)
 
 ```{r}
 pob <- datos %>% 
-  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali)
+  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali, plb)
 ```
 
 
 ```{r}
 acp <- datos %>% 
-  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali) %>% 
+  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali, plbm) %>% 
   prcomp(scale = TRUE)
 
 acp %>% 
@@ -55,8 +55,9 @@ correl <- pob %>%
   add_column(PC1, PC2)
 correl <- correl %>% 
   cor()
-correl <- correl[1:6, 7:8]
+correl <- correl[1:7, 8:9]
 correl <- round(correl, 3)
+correl
 ```
 
 ```{r}
@@ -68,7 +69,7 @@ fviz_nbclust(comp_princ2, kmeans, method = "wss")
 ```{r}
 set.seed(02122019)
 cl <- comp_princ2 %>%
-  kmeans(centers = 4, nstart = 25)
+  kmeans(centers = 3, nstart = 25)
 ```
 
 ```{r}
@@ -79,7 +80,7 @@ fviz_cluster(cl, data = pob, geom = "point")
 datos %>% 
   select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
   arrange(desc(pobreza)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = pobreza, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = pobreza, x = municipio, y = pobreza)) + 
@@ -92,7 +93,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
   arrange(desc(pobreza_e)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = pobreza_e, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = pobreza_e, x = municipio, y = pobreza_e)) + 
@@ -104,7 +105,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, pobreza, pobreza_e, pobreza_m, everything()) %>% 
   arrange(desc(pobreza_m)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = pobreza_m, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = pobreza_m, x = municipio, y = pobreza_m)) + 
@@ -118,7 +119,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_rezedu)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_rezedu, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_rezedu, x = municipio, y = ic_rezedu)) + 
@@ -130,7 +131,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_asalud)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_asalud, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_asalud, x = municipio, y = ic_asalud)) +
@@ -142,7 +143,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_segsoc)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_segsoc, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_segsoc, x = municipio, y = ic_segsoc)) +
@@ -156,11 +157,11 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_cv)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_cv, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_cv, x = municipio, y = ic_cv)) +
-  labs(title = "Municipios con mayor y menor carencias por calidad", x = "Municipio", y = "Porcentaje de la población con carencia por calidad y espacios de vivienda", fill = "Estado") +
+  labs(title = "Municipios con mayor y menor carencias por calidad y espacios de vivienda", x = "Municipio", y = "Porcentaje de la población con carencia por calidad y espacios de vivienda", fill = "Estado") +
   coord_flip()
 ```
 
@@ -169,7 +170,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_sbv)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_sbv, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_sbv, x = municipio, y = ic_sbv)) +
@@ -182,7 +183,7 @@ datos %>%
 datos %>% 
   select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
   arrange(desc(ic_ali)) %>% 
-  slice(1:5, (n()-4):n()) %>% 
+  slice(1:10, (n()-9):n()) %>% 
   ggplot() + 
   geom_col(mapping = aes(x = municipio, y = ic_ali, fill = entidad_federativa)) + 
   geom_text(mapping = aes(label = ic_ali, x = municipio, y = ic_ali)) +
@@ -190,6 +191,43 @@ datos %>%
   coord_flip()
 ```
 
+
+```{r}
+prueba <- tibble(pobreza = datos$pobreza, indicador = acp$x[,1])
+prueba %>% 
+  arrange(desc(pobreza))
+```
+
+
+
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, pobreza, ic_rezedu) %>% 
+  arrange(desc(pobreza)) %>% 
+  slice(1:5) 
+```
+
+
+```{r}
+datos %>% 
+  ggplot(mapping = aes(x = pobreza)) + 
+  geom_histogram(binwidth = 10, col = "black", fill = "cornflowerblue") + 
+  geom_text(stat = "bin", aes(label = ..count..), binwidth = 10, vjust = -1.5) + 
+  lims(y = c(0,500)) + 
+  labs(title = "Número de municipios según porcentaje de pobreza", x = "Porcentajes", y = "Número de municipios")
+```
+
+
+```{r}
+datos %>% 
+  ggplot(mapping = aes(x = pobreza_e)) + 
+  geom_histogram(bins = 15, col = "black", fill = "cornflowerblue") + 
+  geom_text(stat = "bin", aes(label = ..count..), bins = 15, vjust = -1.5) +
+  lims(y = c(0, 700)) +
+  labs(title = "Número de municipios según porcentaje de pobreza extrema", x = "Porcentajes", y = "Número de municipios")
+```
 
 
 
