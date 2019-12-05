@@ -17,6 +17,7 @@ library(tidyverse)
 library(haven)
 library(factoextra)
 library(klaR)
+library(corrplot)
 ```
 
 
@@ -33,7 +34,7 @@ pob <- datos %>%
 
 ```{r}
 acp <- datos %>% 
-  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali, plbm) %>% 
+  select(ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali, plb) %>% 
   prcomp(scale = TRUE)
 
 acp %>% 
@@ -46,7 +47,7 @@ comp_princ2 <- comp_princ[, 1:2] # Las primeras dos componentes principales
 comp_princ2 <- as_tibble(comp_princ2)
 PC1 <- comp_princ2$PC1
 PC2 <- comp_princ2$PC2
-fviz_pca_biplot(acp, geom = "point")
+fviz_pca_biplot(acp, geom = "point") + labs(x = "Componente Principal 1 (55.4%)", y = "Componente Principal 2 (15%)", title = "Gráfica por componentes principales")
 ```
 
 
@@ -69,7 +70,7 @@ fviz_nbclust(comp_princ2, kmeans, method = "wss")
 ```{r}
 set.seed(02122019)
 cl <- comp_princ2 %>%
-  kmeans(centers = 3, nstart = 25)
+  kmeans(centers = 5)
 ```
 
 ```{r}
@@ -191,6 +192,32 @@ datos %>%
   coord_flip()
 ```
 
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(plb)) %>% 
+  slice(1:10, (n()-9):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = plb, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = plb, x = municipio, y = plb)) +
+  labs(x = "Municipio", y = "Porcentaje de la población con ingreso inferior a la línea de bienestar", fill = "Estado") +
+  coord_flip()
+```
+
+
+```{r}
+datos %>% 
+  select(entidad_federativa, municipio, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali , everything()) %>% 
+  arrange(desc(plbm)) %>% 
+  slice(1:10, (n()-9):n()) %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = municipio, y = plbm, fill = entidad_federativa)) + 
+  geom_text(mapping = aes(label = plbm, x = municipio, y = plbm)) +
+  labs(x = "Municipio", y = "Porcentaje de la población con ingreso inferior a la línea de bienestar mínimo", fill = "Estado") +
+  coord_flip()
+```
+
+
 
 ```{r}
 prueba <- tibble(pobreza = datos$pobreza, indicador = acp$x[,1])
@@ -204,7 +231,7 @@ prueba %>%
 
 ```{r}
 datos %>% 
-  select(entidad_federativa, municipio, pobreza, ic_rezedu) %>% 
+  select(entidad_federativa, municipio, pobreza, plb, plbm) %>% 
   arrange(desc(pobreza)) %>% 
   slice(1:5) 
 ```
@@ -230,8 +257,20 @@ datos %>%
 ```
 
 
+```{r}
+ggplot(mapping = aes(x = PC1, y = PC2)) + 
+  geom_point(mapping = aes(colour = as_factor(cl$cluster)))
+```
 
 
+```{r}
+correl <- datos %>% 
+  select(pobreza, ic_rezedu, ic_asalud, ic_segsoc, ic_cv, ic_sbv, ic_ali, plb)
+
+correl <- cor(correl)
+correl[1,]
+corrplot(correl, method = "square", type = "upper")
+```
 
 
 
